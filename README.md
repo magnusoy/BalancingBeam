@@ -24,6 +24,7 @@ You will now be able to open and run the script.
 
 Be sure your connections are connected right on the board and press Upload in Arduino IDE.
 Then open Serial Monitor and you will be presented with the following information:
+
 ![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/out.JPG)
 
 As stated in the Serial Monitor, you will be able to change the Setvalu at any given time by changing writing the value in the Serial Monitor.
