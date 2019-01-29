@@ -14,6 +14,8 @@ The code utilize a number of open source libraries wich you need to download sep
 ### Installing and usage
 Coming.
 
+![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/out.JPG)
+
 ## Built With
 
 * [Arduino](https://www.arduino.cc/) - Arduino
