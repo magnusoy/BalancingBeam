@@ -29,7 +29,7 @@ Then open Serial Monitor and you will be presented with the following informatio
 
 As stated in the Serial Monitor, you will be able to change the Setvalu at any given time by changing writing the value in the Serial Monitor.
 
-PS: You might need to change the PID configurations to fit your construction. Change Kp, Ki, Kd until you are pleased with the reslut.
+PS: You might need to change the PID configurations to fit your construction. Change Kp, Ki, Kd until you are pleased with the result.
 
 ## Built With
 
