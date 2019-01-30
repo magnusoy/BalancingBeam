@@ -25,11 +25,23 @@ You will now be able to open and run the script.
 Be sure your connections are connected right on the board and press Upload in Arduino IDE.
 Then open Serial Monitor and you will be presented with the following information:
 
+ If DEBUG is false:
+              Open Serial Monitor and write any number
+              between 0 - 100 to change setvalue.
+              
+              Open Serial Plotter to watch values
+              being plotted in real time.
+
+![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/plot.JPG)
+
+If DEBUG is true:
+              Open Serial Monitor and you will now be
+              able to change PID parameters by writing
+              in the following format: 1.5:0.6:0.2
+              to change kp, ki, kd params.
+
 ![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/out.JPG)
 
-As stated in the Serial Monitor, you will be able to change the Setvalu at any given time by changing writing the value in the Serial Monitor.
-
-PS: You might need to change the PID configurations to fit your construction. Change Kp, Ki, Kd until you are pleased with the result.
 
 ## Built With
 
