@@ -43,7 +43,7 @@ Then open Serial Monitor and you will be presented with the following informatio
  to change kp, ki, kd params.
 
 
-![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/out.JPG)
+![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/status.JPG)
 
 
 ## Built With
