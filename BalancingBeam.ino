@@ -10,9 +10,28 @@
   Servo - https://github.com/arduino-libraries/Servo
   IR-Sensor - https://github.com/DrGFreeman/SharpDistSensor
   -----------------------------------------------------------
-  Code by: Magnus Øye, Dated: 27.01-2019
+  Code by: Magnus Øye, Dated: 30.01-2019
+  Version: 1.4
   Contact: magnus.oye@gmail.com
   Website: https://github.com/magnusoy/BalancingBeam
+*/
+
+
+/**
+  HOW IT WORKS:
+
+      If DEBUG is false:
+              Open Serial Monitor and write any number
+              between 0 - 100 to change setvalue.
+
+              Open Serial Plotter to watch values
+              being plotted in real time.
+
+      If DEBUG is true:
+              Open Serial Monitor and you will now be
+              able to change PID parameters by writing
+              in the following format: 1.5:0.6:0.2
+              to change kp, ki, kd params.
 */
 
 
@@ -46,19 +65,19 @@ Servo servo;
 // Defining sensor object
 const int SENSOR_PIN = A0;
 // Window size of the median filter (odd number, 1 = no filtering)
-const byte mediumFilterWindowSize = 5;
+const byte mediumFilterWindowSize = 15;
 SharpDistSensor ir_sensor(SENSOR_PIN, mediumFilterWindowSize);
 
 // Defining PID variables
 const double HIGHER_LIMIT = 100.0;
 const double LOWER_LIMIT = 0.0;
-const double Kp = 2.5;
-const double Ki = 0.0;
-const double Kd = 1.0;
+double kp = 0.5;
+double ki = 0.1;
+double kd = 1.0;
 double actualValue = 0.0;
 double setValue = 50.0; // Initial setvalue
 double output = 0.0;
-PID pid(&actualValue, &output, &setValue, Kp, Ki, Kd, DIRECT);
+PID pid(&actualValue, &output, &setValue, kp, ki, kd, DIRECT);
 
 
 // Configures hardware (digital outputs) and serial comm.
@@ -77,13 +96,13 @@ void setup() {
   startUpMsg();
 }
 
-//|===============|\\
-//|     MAIN      |\\
-//|===============|\\
-
+// Main loop
 void loop() {
   actualValue = getDistanceInPercent();
-  if (Serial.available() > 0) {
+  recvWithEndMarker();
+  if (DEBUG) {
+    changeConfigurations();
+  } else if ((!DEBUG) && (Serial.available() > 0)) {
     changeSetvalue();
   }
   switch (currentState) {
@@ -111,12 +130,6 @@ void loop() {
   }
   printSystemStatus();
 }
-
-
-//|===============|\\
-//|   FUNCTIONS   |\\
-//|===============|\\
-
 
 /**
    Checks if the timer has expired. If the timer has expired,
@@ -221,7 +234,7 @@ void updatePosition() {
   @return recieved integer from
           Serial Terminal.
 */
-int readFromSerial() {
+int readNumberFromSerial() {
   static byte ndx = 0;
   char endMarker = '\n';
   char rc = Serial.read();
@@ -237,7 +250,6 @@ int readFromSerial() {
     ndx = 0;
     newData = true;
   }
-  newData = false;
   return atoi(receivedChars);
 }
 
@@ -246,7 +258,7 @@ int readFromSerial() {
    value recieved from serial.
 */
 void changeSetvalue() {
-  int bufferValue = readFromSerial();
+  int bufferValue = readNumberFromSerial();
   if ((bufferValue <= HIGHER_LIMIT) && (bufferValue >= LOWER_LIMIT)) {
     setValue = bufferValue;
   }
@@ -274,6 +286,15 @@ void printState(int state) {
   }
 }
 
+void changeConfigurations() {
+  if (newData) {
+    kp = getValue(receivedChars, ':', 0).toDouble();
+    ki = getValue(receivedChars, ':', 1).toDouble();
+    kd = getValue(receivedChars, ':', 2).toDouble();
+    newData = false;
+  }
+}
+
 /**
    Change the state of the statemachine to the new state
    given by the parameter newState
@@ -281,13 +302,6 @@ void printState(int state) {
    @param newState The new state to set the statemachine to
 */
 void changeStateTo(int newState) {
-  if (DEBUG) {
-    Serial.print("State changed from ");
-    printState(currentState);
-    Serial.print(" to ");
-    printState(newState);
-    Serial.println();
-  }
   currentState = newState;
 }
 
@@ -295,23 +309,92 @@ void changeStateTo(int newState) {
    Prints the systemstate to Serial Monitor as a text.
 */
 void printSystemStatus() {
-  String content = " Actual: " + String(actualValue) +
-                   " Set: " + String(setValue) +
-                   " Output: " + String(output);
-  Serial.print("State: ");
-  printState(currentState);
-  Serial.println(content);
+  if (DEBUG) {
+    String content = " Actual: " + String(actualValue) +
+                     " Set: " + String(setValue) +
+                     " Output: " + String(output) +
+                     " Params: " + String(kp) +
+                     ", " + String(ki) +
+                     ", " + String(kd);
+    Serial.print("State: ");
+    printState(currentState);
+    Serial.println(content);
+  } else {
+    plotValues();
+  }
 }
 
+/**
+  Sends important data to Serial Plotter
+  for graphing.
+*/
+void plotValues() {
+  Serial.print(125);  // To freeze the upper limit
+  Serial.print(" ");
+  Serial.print(actualValue);
+  Serial.print(",");
+  Serial.print(setValue);
+  Serial.print(",");
+  Serial.println(output);
+}
 
 /**
    Prints a startup message to Serial Monitor as a text.
 */
 void startUpMsg() {
-  Serial.println("######################################################");
   Serial.println("<Device up and running>");
-  Serial.println("<Everything is standarized to 0 - 100%>");
-  Serial.println("<Write in Serial Monitor to change setvalue>");
-  Serial.println("<Example:\n       Write 75 to change setvalue to 75%>");
-  Serial.println("######################################################");
+  Serial.println("<Press Enter or Startbutton to continue>");
+}
+
+/**
+  Reads a string from Serial Monitor.
+*/
+void recvWithEndMarker() {
+  static byte ndx = 0;
+  char endMarker = '\n';
+  char rc;
+
+  // if (Serial.available() > 0) {
+  while ((Serial.available() > 0) && (!newData)) {
+    rc = Serial.read();
+
+    if (rc != endMarker) {
+      receivedChars[ndx] = rc;
+      ndx++;
+      if (ndx >= numChars) {
+        ndx = numChars - 1;
+      }
+    }
+    else {
+      receivedChars[ndx] = '\0'; // terminate the string
+      ndx = 0;
+      newData = true;
+    }
+  }
+}
+
+/**
+  Fetches the value from a substring,
+  wich is seperated with a given symbol.
+
+  @param data your String to be seperated
+  @param seperator your symbol to seperate by
+  @param index where your value is located
+
+  @return substring before seperator
+
+*/
+String getValue(String data, char separator, int index) {
+  int found = 0;
+  int strIndex[] = { 0, -1 };
+  int maxIndex = data.length() - 1;
+
+  for (int i = 0; i <= maxIndex && found <= index; i++) {
+    if (data.charAt(i) == separator || i == maxIndex) {
+      found++;
+      strIndex[0] = strIndex[1] + 1;
+      strIndex[1] = (i == maxIndex) ? i + 1 : i;
+    }
+  }
+  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
