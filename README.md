@@ -26,6 +26,7 @@ Be sure your connections are connected right on the board and press Upload in Ar
 Then open Serial Monitor and you will be presented with the following information:
 
 IR-Sensor connected at A1
+
 Servo connected at D9
 
 Be sure to change SERVO_LIMIT_LOW and SERVO_LIMIT_HIGH to your fitting. This is the limits for how far the servo can travel.
