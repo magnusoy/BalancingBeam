@@ -11,7 +11,7 @@
   IR-Sensor - https://github.com/DrGFreeman/SharpDistSensor
   -----------------------------------------------------------
   Code by: Magnus Øye, Dated: 30.01-2019
-  Version: 1.4
+  Version: 1.5
   Contact: magnus.oye@gmail.com
   Website: https://github.com/magnusoy/BalancingBeam
 */
@@ -60,6 +60,9 @@ int currentState = S_IDLE; // A variable holding the current state
 
 // Defining servo object
 const int SERVO_PIN = 9;
+const int START_POS = 90; // In degrees
+const int SERVO_LIMIT_LOW = 80; // In degrees
+const int SERVO_LIMIT_HIGH = 100; //In degrees
 Servo servo;
 
 // Defining sensor object
@@ -85,7 +88,7 @@ void setup() {
   Serial.begin(9600); // Starts Serial communication
 
   servo.attach(SERVO_PIN);
-  servo.write(90); // Servo startposition
+  setDefaultPosition(START_POS);
 
   // Set sensor model
   ir_sensor.setModel(SharpDistSensor::GP2Y0A41SK0F_5V_DS);
@@ -93,7 +96,7 @@ void setup() {
   pid.SetMode(AUTOMATIC);
   pid.SetOutputLimits(LOWER_LIMIT, HIGHER_LIMIT);
 
-  startUpMsg();
+  startupMsg();
 }
 
 // Main loop
@@ -107,8 +110,9 @@ void loop() {
   }
   switch (currentState) {
     case S_IDLE:
-      servo.write(84); // Servo startposition
+      setDefaultPosition(START_POS);
       if (isBallOn(SENSOR_PIN)) {
+        // Waiting for ball
         changeStateTo(S_RUNNING);
       }
       break;
@@ -151,7 +155,7 @@ boolean hasTimerExpired() {
   Starts the timer and set the timer to expire after the
   number of milliseconds given by the parameter duration.
 
-  @param duration The number of milliseconds until the timer expires.
+  @param duration The number of milliseconds until the timer expires
 */
 void startTimer(unsigned long duration) {
   nextTimeout = millis() + duration;
@@ -207,15 +211,16 @@ boolean isBallOn(int sensorpin) {
 }
 
 /**
-  Sets the position of the servo to the position
-  given by the parameter pos
+  Recieves a % between 0 - 100 and sets the
+  servo position between the limits.
 
-  @param pos The position to set the servo to in degrees.
-  Must be between 0 and 180 degrees
+  @param pos The position to set the servo to in %
+  @param limitLow The lowest it can go in degrees
+  @param limitHigh The highest it can go in degrees
 */
-void setServoPos(int pos) {
+void setServoPos(int pos, int limitLow, int limitHigh) {
   pos = constrain(pos, 0, 100);
-  pos = map(pos, 0, 100, 80, 100);
+  pos = map(pos, 0, 100, limitLow, limitHigh);
   servo.write(pos);
 }
 
@@ -225,7 +230,7 @@ void setServoPos(int pos) {
 */
 void updatePosition() {
   pid.Compute();
-  setServoPos(output);
+  setServoPos(output, SERVO_LIMIT_LOW, SERVO_LIMIT_HIGH);
 }
 
 /**
@@ -247,7 +252,7 @@ int readNumberFromSerial() {
       ndx = numChars - 1;
     }
   } else {
-    receivedChars[ndx] = '\0'; // terminate the string
+    receivedChars[ndx] = '\0'; // Terminate the string
     ndx = 0;
     newData = true;
   }
@@ -266,10 +271,19 @@ void changeSetvalue() {
 }
 
 /**
+  Set default servo position.
+
+   @param position
+*/
+void setDefaultPosition(int pos) {
+  servo.write(pos);
+}
+
+/**
    Prints the state to Serial Monitor as a text, based
    on the state-constant provided as the parameter state
 
-   @param state The state to print the tekst-representation for
+   @param state The state to print the text-representation for
 */
 void printState(int state) {
   switch (state) {
@@ -287,6 +301,11 @@ void printState(int state) {
   }
 }
 
+/**
+  Updates the PID parameters if it detects new
+  data in Serial Monitor in the following format->
+  1.0:0.2:0.0 where ':' seperates the values.
+*/
 void changeConfigurations() {
   if (newData) {
     kp = getValue(receivedChars, ':', 0).toDouble();
@@ -308,6 +327,8 @@ void changeStateTo(int newState) {
 
 /**
    Prints the systemstate to Serial Monitor as a text.
+   Dependent on DEBUG to show either information or
+   raw values for Serial Plotter.
 */
 void printSystemStatus() {
   if (DEBUG) {
@@ -342,7 +363,7 @@ void plotValues() {
 /**
    Prints a startup message to Serial Monitor as a text.
 */
-void startUpMsg() {
+void startupMsg() {
   Serial.println("<Device up and running>");
 }
 
@@ -366,7 +387,7 @@ void recvWithEndMarker() {
       }
     }
     else {
-      receivedChars[ndx] = '\0'; // terminate the string
+      receivedChars[ndx] = '\0'; // Terminate the string
       ndx = 0;
       newData = true;
     }
