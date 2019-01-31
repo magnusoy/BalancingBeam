@@ -18,12 +18,17 @@ The following libraries that are included:
 Copy all of the content in the /libraries folder and move them over to your own Arduino libraries folder.
 This folder will often be in your Documents/Arduino folder.
 
-You will now be able to open and run the script.
+You will now be able to open and run the proejct.
 
 ### Usage
 
 Be sure your connections are connected right on the board and press Upload in Arduino IDE.
 Then open Serial Monitor and you will be presented with the following information:
+
+IR-Sensor connected at A1
+Servo connected at D9
+
+Be sure to change SERVO_LIMIT_LOW and SERVO_LIMIT_HIGH to your fitting. This is the limits for how far the servo can travel.
 
  #### If DEBUG is false:
   Open Serial Monitor and write any number
