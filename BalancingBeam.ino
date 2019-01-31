@@ -59,11 +59,11 @@ const int S_RUNNING = 1;
 int currentState = S_IDLE; // A variable holding the current state
 
 // Defining servo object
-const int SERVO_PIN = 10;
+const int SERVO_PIN = 9;
 Servo servo;
 
 // Defining sensor object
-const int SENSOR_PIN = A0;
+const int SENSOR_PIN = A1;
 // Window size of the median filter (odd number, 1 = no filtering)
 const byte mediumFilterWindowSize = 15;
 SharpDistSensor ir_sensor(SENSOR_PIN, mediumFilterWindowSize);
@@ -71,13 +71,13 @@ SharpDistSensor ir_sensor(SENSOR_PIN, mediumFilterWindowSize);
 // Defining PID variables
 const double HIGHER_LIMIT = 100.0;
 const double LOWER_LIMIT = 0.0;
-double kp = 0.5;
+double kp = 0.2;
 double ki = 0.1;
-double kd = 1.0;
+double kd = 0.5;
 double actualValue = 0.0;
 double setValue = 50.0; // Initial setvalue
 double output = 0.0;
-PID pid(&actualValue, &output, &setValue, kp, ki, kd, DIRECT);
+PID pid(&actualValue, &output, &setValue, kp, ki, kd, REVERSE);
 
 
 // Configures hardware (digital outputs) and serial comm.
@@ -107,6 +107,7 @@ void loop() {
   }
   switch (currentState) {
     case S_IDLE:
+      servo.write(84); // Servo startposition
       if (isBallOn(SENSOR_PIN)) {
         changeStateTo(S_RUNNING);
       }
@@ -214,7 +215,7 @@ boolean isBallOn(int sensorpin) {
 */
 void setServoPos(int pos) {
   pos = constrain(pos, 0, 100);
-  pos = map(pos, 0, 100, 30, 150);
+  pos = map(pos, 0, 100, 80, 100);
   servo.write(pos);
 }
 
@@ -343,7 +344,6 @@ void plotValues() {
 */
 void startUpMsg() {
   Serial.println("<Device up and running>");
-  Serial.println("<Press Enter or Startbutton to continue>");
 }
 
 /**
