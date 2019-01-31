@@ -69,7 +69,7 @@ Servo servo;
 const int SENSOR_PIN = A1;
 // Window size of the median filter (odd number, 1 = no filtering)
 const byte mediumFilterWindowSize = 15;
-SharpDistSensor ir_sensor(SENSOR_PIN, mediumFilterWindowSize);
+SharpDistSensor irSensor(SENSOR_PIN, mediumFilterWindowSize);
 
 // Defining PID variables
 const double HIGHER_LIMIT = 100.0;
@@ -91,7 +91,7 @@ void setup() {
   setDefaultPosition(START_POS);
 
   // Set sensor model
-  ir_sensor.setModel(SharpDistSensor::GP2Y0A41SK0F_5V_DS);
+  irSensor.setModel(SharpDistSensor::GP2Y0A41SK0F_5V_DS);
 
   pid.SetMode(AUTOMATIC);
   pid.SetOutputLimits(LOWER_LIMIT, HIGHER_LIMIT);
@@ -178,7 +178,7 @@ int getRawSensorvalue(int pin) {
    @return converted measurment in cm
 */
 int getDistanceInCm() {
-  return ir_sensor.getDist() / 10;
+  return irSensor.getDist() / 10;
 }
 
 /**
@@ -188,7 +188,7 @@ int getDistanceInCm() {
    @return converted measurment in %
 */
 int getDistanceInPercent() {
-  float distance = ir_sensor.getDist();
+  float distance = irSensor.getDist();
   distance = constrain(distance, 20, 350);
   distance = map(distance, 20, 350, LOWER_LIMIT, HIGHER_LIMIT);
   return distance;
