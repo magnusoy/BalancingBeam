@@ -8,7 +8,7 @@ You will need [Arduino IDE](https://www.arduino.cc/en/Main/Software) to upload t
 
 ### Installing
 
-The code utilize a number of open source libraries wich is included under /libraries.
+The code utilize a number of open source libraries wich is included under **/libraries.**
 
 The following libraries that are included:
 * [PID](https://github.com/br3ttb/Arduino-PID-Library) - PID
@@ -25,11 +25,11 @@ You will now be able to open and run the proejct.
 Be sure your connections are connected right on the board and press Upload in Arduino IDE.
 Then open Serial Monitor and you will be presented with the following information:
 
-IR-Sensor connected at A1
+IR-Sensor connected at **A1**
 
-Servo connected at D9
+Servo connected at **D9**
 
-Be sure to change SERVO_LIMIT_LOW and SERVO_LIMIT_HIGH to your fitting. This is the limits for how far the servo can travel.
+Be sure to change **SERVO_LIMIT_LOW** and **SERVO_LIMIT_HIGH** to your fitting. This is the limits for how far the servo can travel.
 
  #### If DEBUG is false:
   Open Serial Monitor and write any number
@@ -45,7 +45,7 @@ Be sure to change SERVO_LIMIT_LOW and SERVO_LIMIT_HIGH to your fitting. This is 
 #### If DEBUG is true:
  Open Serial Monitor and you will now be
  able to change PID parameters by writing
- in the following format: 1.5:0.6:0.2
+ in the following format: **1.5:0.6:0.2**
  to change kp, ki, kd params.
 
 
