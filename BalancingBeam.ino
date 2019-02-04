@@ -60,9 +60,10 @@ int currentState = S_IDLE; // A variable holding the current state
 
 // Defining servo object
 const int SERVO_PIN = 9;
-const int START_POS = 90; // In degrees
-const int SERVO_LIMIT_LOW = 80; // In degrees
-const int SERVO_LIMIT_HIGH = 100; //In degrees
+const int START_POS = 98; // In degrees
+const int SERVO_RANGE = 15; // In degrees
+const int SERVO_LIMIT_LOW = START_POS + SERVO_RANGE; // In degrees
+const int SERVO_LIMIT_HIGH = START_POS - SERVO_RANGE; //In degrees
 Servo servo;
 
 // Defining sensor object
@@ -74,9 +75,9 @@ SharpDistSensor irSensor(SENSOR_PIN, mediumFilterWindowSize);
 // Defining PID variables
 const double HIGHER_LIMIT = 100.0;
 const double LOWER_LIMIT = 0.0;
-double kp = 0.2;
-double ki = 0.1;
-double kd = 0.5;
+double kp = 2.5;
+double ki = 0.0;
+double kd = 0.0;
 double actualValue = 0.0;
 double setValue = 50.0; // Initial setvalue
 double output = 0.0;
@@ -91,7 +92,7 @@ void setup() {
   setDefaultPosition(START_POS);
 
   // Set sensor model
-  irSensor.setModel(SharpDistSensor::GP2Y0A41SK0F_5V_DS);
+  irSensor.setModel(SharpDistSensor::GP2Y0A60SZLF_5V);
 
   pid.SetMode(AUTOMATIC);
   pid.SetOutputLimits(LOWER_LIMIT, HIGHER_LIMIT);
@@ -189,8 +190,8 @@ int getDistanceInCm() {
 */
 int getDistanceInPercent() {
   float distance = irSensor.getDist();
-  distance = constrain(distance, 20, 350);
-  distance = map(distance, 20, 350, LOWER_LIMIT, HIGHER_LIMIT);
+  distance = constrain(distance, 20, 600);
+  distance = map(distance, 20, 600, LOWER_LIMIT, HIGHER_LIMIT);
   return distance;
 }
 
@@ -204,7 +205,7 @@ int getDistanceInPercent() {
 boolean isBallOn(int sensorpin) {
   boolean state = false;
   int raw = getRawSensorvalue(sensorpin);
-  if ((raw < 900) && (raw > 100)) {
+  if ((raw < 875) && (raw > 50)) {
     state = true;
   }
   return state;
@@ -355,8 +356,6 @@ void printSystemStatus() {
   for graphing.
 */
 void plotValues() {
-  Serial.print(125);  // To freeze the upper limit
-  Serial.print(" ");
   Serial.print(actualValue);
   Serial.print(",");
   Serial.print(setValue);
