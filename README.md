@@ -20,6 +20,8 @@ This folder will often be in your Documents/Arduino folder.
 
 You will now be able to open and run the proejct.
 
+![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/BalancingBeam_bb.png)
+
 ### Usage
 
 Be sure your connections are connected right on the board and press Upload in Arduino IDE.
