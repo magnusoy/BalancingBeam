@@ -41,7 +41,7 @@
 #include <SharpDistSensor.h>
 
 // Turn ON/OFF debug functionality to Serial Monitor
-boolean DEBUG = false;
+const boolean DEBUG = false;
 
 // Defining global variables for recieving data
 boolean newData = false;
@@ -102,7 +102,7 @@ void setup() {
 // Main loop
 void loop() {
   actualValue = getDistanceInPercent();
-  recvWithEndMarker();
+  readStringFromSerial();
   if (DEBUG) {
     changeConfigurations();
   } else if ((!DEBUG) && (Serial.available() > 0)) {
@@ -218,7 +218,7 @@ boolean isBallOn(int sensorpin) {
   @param limitLow The lowest it can go in degrees
   @param limitHigh The highest it can go in degrees
 */
-void setServoPos(int pos, int limitLow, int limitHigh) {
+void setServoPos(float pos, int limitLow, int limitHigh) {
   pos = constrain(pos, 0, 100);
   pos = map(pos, 0, 100, limitLow, limitHigh);
   servo.write(pos);
@@ -273,7 +273,7 @@ void changeSetvalue() {
 /**
   Set default servo position.
 
-   @param position
+   @param position in degrees
 */
 void setDefaultPosition(int pos) {
   servo.write(pos);
@@ -305,12 +305,16 @@ void printState(int state) {
   Updates the PID parameters if it detects new
   data in Serial Monitor in the following format->
   1.0:0.2:0.0 where ':' seperates the values.
+  Alternative add another ':' to change setValue aswell.
 */
 void changeConfigurations() {
   if (newData) {
-    kp = getValue(receivedChars, ':', 0).toDouble();
-    ki = getValue(receivedChars, ':', 1).toDouble();
-    kd = getValue(receivedChars, ':', 2).toDouble();
+    kp = getValueFromSerial(receivedChars, ':', 0).toDouble();
+    ki = getValueFromSerial(receivedChars, ':', 1).toDouble();
+    kd = getValueFromSerial(receivedChars, ':', 2).toDouble();
+    if (getValueFromSerial(receivedChars, ':', 3).toDouble() > 1) {
+      setValue = getValueFromSerial(receivedChars, ':', 3).toDouble();
+    }
     newData = false;
   }
 }
@@ -370,12 +374,11 @@ void startupMsg() {
 /**
   Reads a string from Serial Monitor.
 */
-void recvWithEndMarker() {
+void readStringFromSerial() {
   static byte ndx = 0;
   char endMarker = '\n';
   char rc;
 
-  // if (Serial.available() > 0) {
   while ((Serial.available() > 0) && (!newData)) {
     rc = Serial.read();
 
@@ -385,8 +388,7 @@ void recvWithEndMarker() {
       if (ndx >= numChars) {
         ndx = numChars - 1;
       }
-    }
-    else {
+    } else {
       receivedChars[ndx] = '\0'; // Terminate the string
       ndx = 0;
       newData = true;
@@ -405,7 +407,7 @@ void recvWithEndMarker() {
   @return substring before seperator
 
 */
-String getValue(String data, char separator, int index) {
+String getValueFromSerial(String data, char separator, int index) {
   int found = 0;
   int strIndex[] = { 0, -1 };
   int maxIndex = data.length() - 1;
