@@ -18,7 +18,7 @@ The following libraries that are included:
 Copy all of the content in the /libraries folder and move them over to your own Arduino libraries folder.
 This folder will often be in your Documents/Arduino folder.
 
-You will now be able to open and run the proejct.
+You will now be able to open and run the project.
 
 ![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/BalancingBeam_bb.png)
 
