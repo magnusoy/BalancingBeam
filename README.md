@@ -20,7 +20,7 @@ This folder will often be in your Documents/Arduino folder.
 
 You will now be able to open and run the project.
 
-![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/BalancingBeam_bb.png)
+![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/connections.png)
 
 ### Usage
 
