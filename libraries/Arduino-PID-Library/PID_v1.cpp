@@ -80,7 +80,7 @@ bool PID::Compute()
       else output = 0;
 
       /*Compute Rest of PID Output*/
-      output += outputSum - kd * dInput;
+      output += outputSum - kd * dInput + 50;
 
 	    if(output > outMax) output = outMax;
       else if(output < outMin) output = outMin;
