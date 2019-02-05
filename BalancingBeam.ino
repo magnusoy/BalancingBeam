@@ -11,7 +11,7 @@
   IR-Sensor - https://github.com/DrGFreeman/SharpDistSensor
   -----------------------------------------------------------
   Code by: Magnus Øye, Dated: 30.01-2019
-  Version: 1.5
+  Version: 1.6
   Contact: magnus.oye@gmail.com
   Website: https://github.com/magnusoy/BalancingBeam
 */
@@ -48,11 +48,6 @@ boolean newData = false;
 const byte numChars = 32;
 char receivedChars[numChars];   // An array to store the received data
 
-// Time for next timeout, in milliseconds
-unsigned long nextTimeout = 0;
-boolean timerRunning = false;
-const int RESET_TIME = 250;
-
 // Constants representing the states in the state machine
 const int S_IDLE = 0;
 const int S_RUNNING = 1;
@@ -61,7 +56,7 @@ int currentState = S_IDLE; // A variable holding the current state
 // Defining servo object
 const int SERVO_PIN = 9;
 const int START_POS = 98; // In degrees
-const int SERVO_RANGE = 15; // In degrees
+const int SERVO_RANGE = 10; // In degrees
 const int SERVO_LIMIT_LOW = START_POS + SERVO_RANGE; // In degrees
 const int SERVO_LIMIT_HIGH = START_POS - SERVO_RANGE; //In degrees
 Servo servo;
@@ -75,9 +70,9 @@ SharpDistSensor irSensor(SENSOR_PIN, mediumFilterWindowSize);
 // Defining PID variables
 const double HIGHER_LIMIT = 100.0;
 const double LOWER_LIMIT = 0.0;
-double kp = 2.5;
-double ki = 0.0;
-double kd = 0.0;
+double kp = 0.42;
+double ki = 0.2;
+double kd = 0.9;
 double actualValue = 0.0;
 double setValue = 50.0; // Initial setvalue
 double output = 0.0;
@@ -86,7 +81,7 @@ PID pid(&actualValue, &output, &setValue, kp, ki, kd, REVERSE);
 
 // Configures hardware (digital outputs) and serial comm.
 void setup() {
-  Serial.begin(9600); // Starts Serial communication
+  Serial.begin(19200); // Starts Serial communication
 
   servo.attach(SERVO_PIN);
   setDefaultPosition(START_POS);
@@ -112,7 +107,8 @@ void loop() {
   switch (currentState) {
     case S_IDLE:
       setDefaultPosition(START_POS);
-      if (isBallOn(SENSOR_PIN)) {
+      output = 50;
+      if (isBallOn(actualValue)) {
         // Waiting for ball
         changeStateTo(S_RUNNING);
       }
@@ -120,66 +116,15 @@ void loop() {
 
     case S_RUNNING:
       updatePosition();
-      if ((!isBallOn(SENSOR_PIN)) && (!timerRunning)) {
-        startTimer(RESET_TIME);
-        timerRunning = true;
-      }
-      if ((hasTimerExpired()) && (timerRunning)) {
-        timerRunning = false;
+      if (!isBallOn(actualValue)) {
         changeStateTo(S_IDLE);
       }
       break;
 
     default:
       servo.detach();
-      Serial.println("ERROR, please reboot the device.");
   }
   printSystemStatus();
-}
-
-/**
-   Checks if the timer has expired. If the timer has expired,
-   true is returned. If the timer has not yet expired,
-   false is returned.
-
-   @return true if timer has expired, false if not
-*/
-boolean hasTimerExpired() {
-  boolean hasExpired = false;
-  if (millis() > nextTimeout) {
-    hasExpired = true;
-  }
-  return hasExpired;
-}
-
-/**
-  Starts the timer and set the timer to expire after the
-  number of milliseconds given by the parameter duration.
-
-  @param duration The number of milliseconds until the timer expires
-*/
-void startTimer(unsigned long duration) {
-  nextTimeout = millis() + duration;
-}
-
-/**
-   Fetches the raw sensor value.
-
-   @param pin position of sensor
-   @return raw sensorvalue (0 - 1024)
-*/
-int getRawSensorvalue(int pin) {
-  return analogRead(pin);
-}
-
-/**
-   Fetches the converted
-   measured value from sensor
-
-   @return converted measurment in cm
-*/
-int getDistanceInCm() {
-  return irSensor.getDist() / 10;
 }
 
 /**
@@ -191,7 +136,7 @@ int getDistanceInCm() {
 int getDistanceInPercent() {
   float distance = irSensor.getDist();
   distance = constrain(distance, 20, 600);
-  distance = map(distance, 20, 600, LOWER_LIMIT, HIGHER_LIMIT);
+  distance = map(distance, 20, 600, 0, 100);
   return distance;
 }
 
@@ -202,10 +147,9 @@ int getDistanceInPercent() {
    @param pin position of sensor
    @return state of the ball (true / false)
 */
-boolean isBallOn(int sensorpin) {
+boolean isBallOn(float currentPosition) {
   boolean state = false;
-  int raw = getRawSensorvalue(sensorpin);
-  if ((raw < 875) && (raw > 50)) {
+  if (currentPosition < 99) {
     state = true;
   }
   return state;
