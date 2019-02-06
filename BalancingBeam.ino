@@ -10,8 +10,8 @@
   Servo - https://github.com/arduino-libraries/Servo
   IR-Sensor - https://github.com/DrGFreeman/SharpDistSensor
   -----------------------------------------------------------
-  Code by: Magnus Øye, Dated: 30.01-2019
-  Version: 1.6
+  Code by: Magnus Øye, Dated: 06.02-2019
+  Version: 1.7
   Contact: magnus.oye@gmail.com
   Website: https://github.com/magnusoy/BalancingBeam
 */
@@ -46,7 +46,7 @@ const boolean DEBUG = false;
 // Defining global variables for recieving data
 boolean newData = false;
 const byte numChars = 32;
-char receivedChars[numChars];   // An array to store the received data
+char receivedChars[numChars]; // An array to store the received data
 
 // Constants representing the states in the state machine
 const int S_IDLE = 0;
@@ -55,9 +55,9 @@ int currentState = S_IDLE; // A variable holding the current state
 
 // Defining servo object
 const int SERVO_PIN = 9;
-const int START_POS = 98; // In degrees
-const int SERVO_RANGE = 10; // In degrees
-const int SERVO_LIMIT_LOW = START_POS + SERVO_RANGE; // In degrees
+const int START_POS = 94; // In degrees
+const int SERVO_RANGE = 15; // In degrees
+const int SERVO_LIMIT_LOW = START_POS + SERVO_RANGE;  // In degrees
 const int SERVO_LIMIT_HIGH = START_POS - SERVO_RANGE; //In degrees
 Servo servo;
 
@@ -70,9 +70,9 @@ SharpDistSensor irSensor(SENSOR_PIN, mediumFilterWindowSize);
 // Defining PID variables
 const double HIGHER_LIMIT = 100.0;
 const double LOWER_LIMIT = 0.0;
-double kp = 0.42;
-double ki = 0.2;
-double kd = 0.9;
+double kp = 0.5;
+double ki = 0.13;
+double kd = 0.7;
 double actualValue = 0.0;
 double setValue = 50.0; // Initial setvalue
 double output = 0.0;
@@ -92,7 +92,6 @@ void setup() {
   pid.SetMode(AUTOMATIC);
   pid.SetOutputLimits(LOWER_LIMIT, HIGHER_LIMIT);
 
-  startupMsg();
 }
 
 // Main loop
@@ -308,13 +307,6 @@ void plotValues() {
 }
 
 /**
-   Prints a startup message to Serial Monitor as a text.
-*/
-void startupMsg() {
-  Serial.println("<Device up and running>");
-}
-
-/**
   Reads a string from Serial Monitor.
 */
 void readStringFromSerial() {
@@ -358,9 +350,9 @@ String getValueFromSerial(String data, char separator, int index) {
   for (int i = 0; i <= maxIndex && found <= index; i++) {
     if (data.charAt(i) == separator || i == maxIndex) {
       found++;
-      strIndex[0] = strIndex[1] + 1;
       strIndex[1] = (i == maxIndex) ? i + 1 : i;
     }
   }
+      strIndex[0] = strIndex[1] + 1;
   return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
