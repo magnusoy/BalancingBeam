@@ -8,6 +8,8 @@ You will need [Arduino IDE](https://www.arduino.cc/en/Main/Software) to upload t
 
 ### Installing
 
+Download .zip or clone repository to your computer.
+
 The code utilize a number of open source libraries wich is included under **/libraries.**
 
 The following libraries that are included:
@@ -22,16 +24,20 @@ You will now be able to open and run the project.
 
 ![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/connections.png)
 
+## To be noted
+There are several constants and parameters that can vary. Therefor be aware that you might need to change the following to get it working:
+
+- **Sensor pin** connected to A1
+- **Servo pin** connected to D9
+- **START_POS** should be at an angle where the beam is parallel to the ground
+- **SERVO_RANGE** should be at an angle for good control, play around and check
+- **MIN_DISTANCE** should be where you want the sensor to start measure distance
+- **MAX_DISTANCE** should be where you want the sensor to stop measure distance
+- **mediumFilterWindowSize** has to be an odd number and you should scale it up until noise is removed
+- **kp, ki, kd** is the PID params and the numbers depend on your construction, play around and see
+- **irSensor.setModel(SharpDistSensor::GP2Y0A60SZLF_5V)** be sure to select the right model
+
 ### Usage
-
-Be sure your connections are connected right on the board and press Upload in Arduino IDE.
-Then open Serial Monitor and you will be presented with the following information:
-
-IR-Sensor connected at **A1**
-
-Servo connected at **D9**
-
-Be sure to change **SERVO_LIMIT_LOW** and **SERVO_LIMIT_HIGH** to your fitting. This is the limits for how far the servo can travel.
 
  #### If DEBUG is false:
   Open Serial Monitor and write any number
@@ -53,19 +59,6 @@ Be sure to change **SERVO_LIMIT_LOW** and **SERVO_LIMIT_HIGH** to your fitting. 
 
 ![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/status.JPG)
 
-
-## To be noted
-There are several constants and parameters that can vary. Therefor be aware that you might need to change the following to get it working:
-
-- **Sensor pin** connected to A1
-- **Servo pin** connected to D9
-- **START_POS** should be at an angle where the beam is parallel to the ground
-- **SERVO_RANGE** should be at an angle for good control, play around and check
-- **MIN_DISTANCE** should be where you want the sensor to start measure distance
-- **MAX_DISTANCE** should be where you want the sensor to stop measure distance
-- **mediumFilterWindowSize** has to be an odd number and you should scale it up until noise is removed
-- **kp, ki, kd** is the PID params and the numbers depend on your construction, play around and see
-- **irSensor.setModel(SharpDistSensor::GP2Y0A60SZLF_5V)** be sure to select the right model
 
 ## Built With
 
