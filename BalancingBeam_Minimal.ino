@@ -38,6 +38,8 @@ Servo servo;
 const int POT_PIN = A0;
 // Defining sensor object
 const int SENSOR_PIN = A1;
+const int MIN_DISTANCE = 20; // In millimeters
+const int MAX_DISTANCE = 600; // In millimeters
 // Window size of the median filter (odd number, 1 = no filtering)
 const byte mediumFilterWindowSize = 15;
 SharpDistSensor irSensor(SENSOR_PIN, mediumFilterWindowSize);
@@ -56,7 +58,6 @@ PID pid(&actualValue, &output, &setValue, KP, KI, KD, REVERSE);
 
 // Configures hardware (digital outputs) and serial comm.
 void setup() {
-  Serial.begin(9600);
   servo.attach(SERVO_PIN);
   setDefaultPosition(START_POS);
 
@@ -69,7 +70,7 @@ void setup() {
 
 // Main loop
 void loop() {
-  actualValue = getDistanceInPercent(20, 600);
+  actualValue = getDistanceInPercent(MIN_DISTANCE, MAX_DISTANCE);
   changeSetvalue(POT_PIN);
   switch (currentState) {
     case S_IDLE:
