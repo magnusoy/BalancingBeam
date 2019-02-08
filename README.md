@@ -54,6 +54,19 @@ Be sure to change **SERVO_LIMIT_LOW** and **SERVO_LIMIT_HIGH** to your fitting. 
 ![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/status.JPG)
 
 
+## To be noted
+There are several constants and parameters that can vary. Therefor be aware that you might need to change the following to get it working:
+
+- **Sensor pin** connected to A1
+- **Servo pin** connected to D9
+- **START_POS** should be at an angle where the beam is parallel to the ground
+- **SERVO_RANGE** should be at an angle for good control, play around and check
+- **MIN_DISTANCE** should be where you want the sensor to start measure distance
+- **MAX_DISTANCE** should be where you want the sensor to stop measure distance
+- **mediumFilterWindowSize** has to be an odd number and you should scale it up until noise is removed
+- **kp, ki, kd** is the PID params and the numbers depend on your construction, play around and see
+- **irSensor.setModel(SharpDistSensor::GP2Y0A60SZLF_5V)** be sure to select the right model
+
 ## Built With
 
 * [Arduino](https://www.arduino.cc/) - Arduino
