@@ -1,8 +1,8 @@
 /**********************************************************************************************
- * Arduino PID Library - Version 1.2.1
+ * Arduino PID Library - Version 1.1.1
  * by Brett Beauregard <br3ttb@gmail.com> brettbeauregard.com
  *
- * This Library is licensed under the MIT License
+ * This Library is licensed under a GPLv3 License
  **********************************************************************************************/
 
 #if ARDUINO >= 100
@@ -66,13 +66,13 @@ bool PID::Compute()
       double input = *myInput;
       double error = *mySetpoint - input;
       double dInput = (input - lastInput);
-      outputSum+= (ki * error);
+      outputSum += (ki * error);
 
       /*Add Proportional on Measurement, if P_ON_M is specified*/
       if(!pOnE) outputSum-= kp * dInput;
 
-      if(outputSum > outMax) outputSum= outMax;
-      else if(outputSum < outMin) outputSum= outMin;
+      if(outputSum > outMax-50) outputSum= outMax - 50;
+      else if(outputSum < outMin-50) outputSum= outMin - 50;
 
       /*Add Proportional on Error, if P_ON_E is specified*/
 	   double output;
@@ -80,7 +80,8 @@ bool PID::Compute()
       else output = 0;
 
       /*Compute Rest of PID Output*/
-      output += outputSum - kd * dInput + 50;
+      output += outputSum - kd * dInput;
+      output = output + 50;
 
 	    if(output > outMax) output = outMax;
       else if(output < outMin) output = outMin;
@@ -221,4 +222,6 @@ double PID::GetKi(){ return  dispKi;}
 double PID::GetKd(){ return  dispKd;}
 int PID::GetMode(){ return  inAuto ? AUTOMATIC : MANUAL;}
 int PID::GetDirection(){ return controllerDirection;}
+void PID::ResetOutputSum() {outputSum = 0;}
+double PID::GetOutputSum() { return outputSum;}
 
