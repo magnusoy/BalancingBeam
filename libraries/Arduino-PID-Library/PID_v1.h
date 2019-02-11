@@ -1,6 +1,6 @@
 #ifndef PID_v1_h
 #define PID_v1_h
-#define LIBRARY_VERSION	1.2.1
+#define LIBRARY_VERSION	1.1.1
 
 class PID
 {
@@ -50,7 +50,8 @@ class PID
 										  //   once it is set in the constructor.
     void SetSampleTime(int);              // * sets the frequency, in Milliseconds, with which 
                                           //   the PID calculation is performed.  default is 100
-										  
+		
+  void ResetOutputSum();
 										  
 										  
   //Display functions ****************************************************************
@@ -59,6 +60,7 @@ class PID
 	double GetKd();						  // where it's important to know what is actually 
 	int GetMode();						  //  inside the PID.
 	int GetDirection();					  //
+  double GetOutputSum();
 
   private:
 	void Initialize();
