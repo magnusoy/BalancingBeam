@@ -10,8 +10,8 @@
   Servo - https://github.com/arduino-libraries/Servo
   IR-Sensor - https://github.com/DrGFreeman/SharpDistSensor
   -----------------------------------------------------------
-  Code by: Magnus Øye, Dated: 06.02-2019
-  Version: 1.7
+  Code by: Magnus Øye, Dated: 11.02-2019
+  Version: 1.8
   Contact: magnus.oye@gmail.com
   Website: https://github.com/magnusoy/BalancingBeam
 */
@@ -70,9 +70,9 @@ SharpDistSensor irSensor(SENSOR_PIN, mediumFilterWindowSize);
 // Defining PID variables
 const double HIGHER_LIMIT = 100.0;
 const double LOWER_LIMIT = 0.0;
-double kp = 0.5;
-double ki = 0.13;
-double kd = 0.7;
+double kp = 0.45;
+double ki = 0.3;
+double kd = 0.6;
 double actualValue = 0.0;
 double setValue = 50.0; // Initial setvalue
 double output = 0.0;
@@ -106,6 +106,7 @@ void loop() {
   switch (currentState) {
     case S_IDLE:
       setDefaultPosition(START_POS);
+      pid.ResetOutputSum();
       output = 50;
       if (isBallOn(actualValue)) {
         // Waiting for ball
@@ -283,9 +284,9 @@ void printSystemStatus() {
     String content = " Actual: " + String(actualValue) +
                      " Set: " + String(setValue) +
                      " Output: " + String(output) +
-                     " Params: " + String(kp) +
-                     ", " + String(ki) +
-                     ", " + String(kd);
+                     " Params: " + String(pid.GetKp()) +
+                     ", " + String(pid.GetKi()) +
+                     ", " + String(pid.GetKd());
     Serial.print("State: ");
     printState(currentState);
     Serial.println(content);
@@ -353,6 +354,6 @@ String getValueFromSerial(String data, char separator, int index) {
       strIndex[1] = (i == maxIndex) ? i + 1 : i;
     }
   }
-      strIndex[0] = strIndex[1] + 1;
+  strIndex[0] = strIndex[1] + 1;
   return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
