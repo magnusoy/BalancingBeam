@@ -10,8 +10,8 @@
   Servo - https://github.com/arduino-libraries/Servo
   IR-Sensor - https://github.com/DrGFreeman/SharpDistSensor
   -----------------------------------------------------------
-  Code by: Magnus Øye, Dated: 11.02-2019
-  Version: 1.8
+  Code by: Magnus Øye, Dated: 06.02-2019
+  Version: 1.9
   Contact: magnus.oye@gmail.com
   Website: https://github.com/magnusoy/BalancingBeam
 */
@@ -39,6 +39,7 @@
 #include <PID_v1.h>
 #include <Servo.h>
 #include <SharpDistSensor.h>
+#include <Filters.h>
 
 // Turn ON/OFF debug functionality to Serial Monitor
 const boolean DEBUG = false;
@@ -55,7 +56,7 @@ int currentState = S_IDLE; // A variable holding the current state
 
 // Defining servo object
 const int SERVO_PIN = 9;
-const int START_POS = 94; // In degrees
+const int START_POS = 92; // In degrees
 const int SERVO_RANGE = 15; // In degrees
 const int SERVO_LIMIT_LOW = START_POS + SERVO_RANGE;  // In degrees
 const int SERVO_LIMIT_HIGH = START_POS - SERVO_RANGE; //In degrees
@@ -64,19 +65,25 @@ Servo servo;
 // Defining sensor object
 const int SENSOR_PIN = A1;
 // Window size of the median filter (odd number, 1 = no filtering)
-const byte mediumFilterWindowSize = 15;
+const byte mediumFilterWindowSize = 30;
 SharpDistSensor irSensor(SENSOR_PIN, mediumFilterWindowSize);
+
+// filters out changes faster that 5 Hz.
+float filterFrequency = 2.8;
+
+// create a one pole (RC) lowpass filter
+FilterOnePole lowpassFilter(LOWPASS, filterFrequency);
 
 // Defining PID variables
 const double HIGHER_LIMIT = 100.0;
 const double LOWER_LIMIT = 0.0;
-double kp = 0.45;
-double ki = 0.3;
-double kd = 0.6;
+double kp = 0.28;
+double ki = 0.1;
+double kd = 0.62;
 double actualValue = 0.0;
 double setValue = 50.0; // Initial setvalue
-double output = 0.0;
-PID pid(&actualValue, &output, &setValue, kp, ki, kd, REVERSE);
+double PIDOutput = 0.0;
+PID pid(&actualValue, &PIDOutput, &setValue, kp, ki, kd, REVERSE);
 
 
 // Configures hardware (digital outputs) and serial comm.
@@ -91,7 +98,6 @@ void setup() {
 
   pid.SetMode(AUTOMATIC);
   pid.SetOutputLimits(LOWER_LIMIT, HIGHER_LIMIT);
-
 }
 
 // Main loop
@@ -106,8 +112,6 @@ void loop() {
   switch (currentState) {
     case S_IDLE:
       setDefaultPosition(START_POS);
-      pid.ResetOutputSum();
-      output = 50;
       if (isBallOn(actualValue)) {
         // Waiting for ball
         changeStateTo(S_RUNNING);
@@ -115,7 +119,8 @@ void loop() {
       break;
 
     case S_RUNNING:
-      updatePosition();
+      double gap = setValue - actualValue;
+      updatePosition(gap);
       if (!isBallOn(actualValue)) {
         changeStateTo(S_IDLE);
       }
@@ -149,7 +154,7 @@ int getDistanceInPercent() {
 */
 boolean isBallOn(float currentPosition) {
   boolean state = false;
-  if (currentPosition < 99) {
+  if (currentPosition <= 99) {
     state = true;
   }
   return state;
@@ -173,9 +178,16 @@ void setServoPos(float pos, int limitLow, int limitHigh) {
    Updates the servoposition
    to the new PID-output.
 */
-void updatePosition() {
+void updatePosition(double gap) {
+  double filteredOutput = 0.0;
+  if (gap < 10) {
+    pid.SetTunings(kp, ki, kd);
+  } else {
+    pid.SetTunings(0.4, 0.05, 0.5);
+  }
   pid.Compute();
-  setServoPos(output, SERVO_LIMIT_LOW, SERVO_LIMIT_HIGH);
+  lowpassFilter.input(PIDOutput);
+  setServoPos(lowpassFilter.output(), SERVO_LIMIT_LOW, SERVO_LIMIT_HIGH);
 }
 
 /**
@@ -216,12 +228,16 @@ void changeSetvalue() {
 }
 
 /**
-  Set default servo position.
+  Set default servo position,
+  pid output and reset the output
+  from the PID 'Ki' condition.
 
    @param position in degrees
 */
 void setDefaultPosition(int pos) {
+  pid.ResetOutputSum();
   servo.write(pos);
+  PIDOutput = 50;
 }
 
 /**
@@ -283,7 +299,7 @@ void printSystemStatus() {
   if (DEBUG) {
     String content = " Actual: " + String(actualValue) +
                      " Set: " + String(setValue) +
-                     " Output: " + String(output) +
+                     " Output: " + String(PIDOutput) +
                      " Params: " + String(pid.GetKp()) +
                      ", " + String(pid.GetKi()) +
                      ", " + String(pid.GetKd());
@@ -304,7 +320,7 @@ void plotValues() {
   Serial.print(",");
   Serial.print(setValue);
   Serial.print(",");
-  Serial.println(output);
+  Serial.println(lowpassFilter.output());
 }
 
 /**
