@@ -16,6 +16,7 @@ The following libraries that are included:
 * [PID](https://github.com/br3ttb/Arduino-PID-Library) - PID
 * [Servo](https://github.com/arduino-libraries/Servo) - Servo
 * [SharpDistSensor](https://github.com/DrGFreeman/SharpDistSensor) - SharpDistSensor
+* [Filters](https://github.com/JonHub/Filters) - Filters
 
 Copy all of the content in the /libraries folder and move them over to your own Arduino libraries folder.
 This folder will often be in your Documents/Arduino folder.
