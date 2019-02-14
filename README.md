@@ -48,7 +48,7 @@ There are several constants and parameters that can vary. Therefor be aware that
   being plotted in real time.
 
 
-![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/plot.JPG)
+![Output](https://github.com/magnusoy/BalancingBeam/blob/master/docs/ki_adapt.png)
 
 
 #### If DEBUG is true:
